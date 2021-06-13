@@ -1,6 +1,6 @@
 const INIT_LIFE_POINTS = 4000;
 
-const NOT_YOU_TURN_ERROR = 'NotYourTurn';
+const NOT_YOUR_TURN_ERROR = 'NotYourTurn';
 
 export class Match implements IMatch {
   map: ITerrain[];
@@ -84,7 +84,7 @@ export class Match implements IMatch {
   moveLeader(player: 'player1' | 'player2', position: IPosition) {
     this.throwIfNotReady();
     if (this.turnOwner !== player) {
-      throw new Error(NOT_YOU_TURN_ERROR);
+      throw new Error(NOT_YOUR_TURN_ERROR);
     }
     if (this[player].leader.hasMoved === true) {
       throw new Error('AlreadyMoved');
@@ -100,7 +100,7 @@ export class Match implements IMatch {
       this.turnOwner = p;
       this[p].leader.hasMoved = false;
     } else {
-      throw new Error(NOT_YOU_TURN_ERROR);
+      throw new Error(NOT_YOUR_TURN_ERROR);
     }
   }
 }

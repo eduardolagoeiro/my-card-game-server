@@ -1,7 +1,7 @@
 import { Match } from './Match';
 import Player from './Player';
 
-describe('Match.create', () => {
+describe('create', () => {
   test('success', () => {
     const p1 = Player.create('Timmy');
     const match = new Match(p1);
@@ -11,7 +11,7 @@ describe('Match.create', () => {
   });
 });
 
-describe('Match.setPlayer2', () => {
+describe('setPlayer2', () => {
   test('success', () => {
     const p1 = Player.create('Timmy');
     let match = new Match(p1);
@@ -40,7 +40,7 @@ describe('Match.setPlayer2', () => {
   });
 });
 
-describe('Match.isReady', () => {
+describe('isReady', () => {
   test('is true', () => {
     const p1 = Player.create('Timmy');
     let match = new Match(p1);
@@ -60,7 +60,7 @@ describe('Match.isReady', () => {
   });
 });
 
-describe('Match.moveLeader', () => {
+describe('moveLeader', () => {
   test('success', () => {
     const p1 = Player.create('Timmy');
     let match = new Match(p1);
@@ -81,7 +81,9 @@ describe('Match.moveLeader', () => {
 
     expect(terrain?.slot?.name).toEqual('leader');
 
-    expect(terrain?.slot?.name).toEqual('leader');
+    expect(terrain?.slot?.owner).toEqual('player1');
+
+    expect(terrain?.slot?.instance).toEqual(match.player1.leader);
   });
 
   test('fail on NotYourTurn', () => {
@@ -145,7 +147,7 @@ describe('Match.moveLeader', () => {
   });
 });
 
-describe('Match.endTurn', () => {
+describe('endTurn', () => {
   test('success', () => {
     const p1 = Player.create('Timmy');
     let match = new Match(p1);
