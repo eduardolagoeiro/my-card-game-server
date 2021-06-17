@@ -1,14 +1,41 @@
+import { v4 } from 'uuid';
+import { Player } from './Player';
 const INIT_LIFE_POINTS = 4000;
 
 const NOT_YOUR_TURN_ERROR = 'NotYourTurn';
 
+interface ILeader {
+  hasMoved: boolean;
+}
+
+interface IMatchPlayer {
+  leader: ILeader;
+  player: Player;
+  lifePoints: number;
+  cards: ICard[];
+  hand: ICard[];
+}
+
+interface IMatch {
+  turnOwner: string;
+  player1: IMatchPlayer;
+  player2?: IMatchPlayer;
+  map: ITerrain[];
+}
+
 export class Match implements IMatch {
+  id: string;
   map: ITerrain[];
   turnOwner: string;
   player1: IMatchPlayer;
   player2: IMatchPlayer;
+  static storage: Map<string, Match> = new Map();
 
-  constructor(player1: IPlayer) {
+  static get(id: string): Match | undefined {
+    return Match.storage.get(id);
+  }
+
+  constructor(player1: Player) {
     const map = [];
     for (let i = 0; i < 7; i += 1) {
       for (let j = 0; j < 7; j += 1) {
@@ -29,9 +56,12 @@ export class Match implements IMatch {
       leader: { hasMoved: false },
       lifePoints: INIT_LIFE_POINTS,
     };
+
+    this.id = v4();
+    Match.storage.set(this.id, this);
   }
 
-  setPlayer2(player2: IPlayer) {
+  setPlayer2(player2: Player) {
     if (this.player2) {
       throw new Error('Player2AlreadySet');
     }

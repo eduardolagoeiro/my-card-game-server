@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "ts-node-dev --poll --respawn --transpile-only src/server.ts",
-    "test": "jest --runInBand --watch",
+    "test": "node --inspect=0.0.0.0:9229 node_modules/.bin/jest --runInBand --watchAll",
     "lint": "eslint --fix \"src/**\""
   },
   "keywords": [],
@@ -12,16 +12,21 @@
   "license": "ISC",
   "dependencies": {
     "@types/cors": "^2.8.10",
+    "@types/debug": "^4.1.5",
     "@types/express": "^4.17.12",
     "@types/morgan": "^1.9.2",
+    "@types/socket.io": "^3.0.2",
+    "@types/uuid": "^8.3.0",
     "celebrate": "^14.0.0",
     "cors": "^2.8.5",
+    "debug": "^4.3.1",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
     "helmet": "^4.6.0",
     "mongoose": "^5.12.12",
     "morgan": "^1.10.0",
-    "socket.io": "^4.1.2"
+    "socket.io": "^4.1.2",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0",
@@ -38,6 +43,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "jest": "^27.0.4",
     "prettier": "^2.2.1",
+    "socket.io-client": "^4.1.2",
     "ts-jest": "^27.0.3",
     "ts-loader": "^9.2.2",
     "ts-node-dev": "^1.1.6",

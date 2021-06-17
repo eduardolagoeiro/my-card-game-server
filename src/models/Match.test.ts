@@ -1,9 +1,9 @@
 import { Match } from './Match';
-import Player from './Player';
+import { Player } from './Player';
 
 describe('create', () => {
   test('success', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     const match = new Match(p1);
 
     expect(match).toBeDefined();
@@ -13,10 +13,10 @@ describe('create', () => {
 
 describe('setPlayer2', () => {
   test('success', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -25,14 +25,14 @@ describe('setPlayer2', () => {
   });
 
   test('fail on Player2AlreadySet', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
-    const anotherPlayer2 = Player.create('Vernie');
+    const anotherPlayer2 = new Player('Vernie');
 
     expect(() => match.setPlayer2(anotherPlayer2)).toThrowError(
       'Player2AlreadySet'
@@ -42,10 +42,10 @@ describe('setPlayer2', () => {
 
 describe('isReady', () => {
   test('is true', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -53,7 +53,7 @@ describe('isReady', () => {
   });
 
   test('is false', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     const match = new Match(p1);
 
     expect(match.isReady()).toEqual(false);
@@ -62,10 +62,10 @@ describe('isReady', () => {
 
 describe('moveLeader', () => {
   test('success', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -87,10 +87,10 @@ describe('moveLeader', () => {
   });
 
   test('fail on NotYourTurn', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -102,10 +102,10 @@ describe('moveLeader', () => {
   });
 
   test('fail on OutOfBounds', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -117,10 +117,10 @@ describe('moveLeader', () => {
   });
 
   test('fail on AlreadyMoved', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -132,10 +132,10 @@ describe('moveLeader', () => {
   });
 
   test('fail on HasObstacle', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -149,10 +149,10 @@ describe('moveLeader', () => {
 
 describe('endTurn', () => {
   test('success', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     let match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -162,17 +162,17 @@ describe('endTurn', () => {
   });
 
   test('fail on MatchNotReady', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     const match = new Match(p1);
 
     expect(() => match.endTurn('player1')).toThrowError('MatchNotReady');
   });
 
   test('fail on NotYourTurn', () => {
-    const p1 = Player.create('Timmy');
+    const p1 = new Player('Timmy');
     const match = new Match(p1);
 
-    const p2 = Player.create('Ebony');
+    const p2 = new Player('Ebony');
 
     match.setPlayer2(p2);
 
@@ -181,10 +181,10 @@ describe('endTurn', () => {
 });
 
 test('two leaders moving', () => {
-  const p1 = Player.create('Timmy');
+  const p1 = new Player('Timmy');
   let match = new Match(p1);
 
-  const p2 = Player.create('Ebony');
+  const p2 = new Player('Ebony');
 
   match.setPlayer2(p2);
 
