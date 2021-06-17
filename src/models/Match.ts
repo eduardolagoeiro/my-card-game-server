@@ -74,6 +74,8 @@ export class Match implements IMatch {
       player: player2,
       hand: player2.cards.slice(0, 5),
     };
+    this.placeLeader('player1', { x: 0, y: 3 });
+    this.placeLeader('player2', { x: 6, y: 3 });
   }
 
   isReady(): boolean {

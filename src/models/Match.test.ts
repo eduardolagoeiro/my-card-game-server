@@ -192,7 +192,7 @@ test('two leaders moving', () => {
 
   match.endTurn('player1');
 
-  match.moveLeader('player2', { x: 6, y: 3 });
+  match.moveLeader('player2', { x: 5, y: 3 });
 
   match.endTurn('player2');
 
@@ -200,7 +200,7 @@ test('two leaders moving', () => {
 
   match.endTurn('player1');
 
-  match.moveLeader('player2', { x: 5, y: 3 });
+  match.moveLeader('player2', { x: 4, y: 3 });
 
   match.endTurn('player2');
 
@@ -208,11 +208,7 @@ test('two leaders moving', () => {
 
   match.endTurn('player1');
 
-  match.moveLeader('player2', { x: 4, y: 3 });
-
-  match.endTurn('player2');
-
-  expect(() => match.moveLeader('player1', { x: 4, y: 3 })).toThrowError(
+  expect(() => match.moveLeader('player2', { x: 3, y: 3 })).toThrowError(
     'HasObstacle'
   );
 });
