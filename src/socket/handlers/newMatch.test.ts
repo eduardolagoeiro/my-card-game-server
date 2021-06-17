@@ -16,15 +16,4 @@ describe('newMatch', () => {
       auth: p.id,
     });
   });
-
-  test('fail on PlayerNotFound', (done) => {
-    sockets.clientSocket1?.on('error', (err) => {
-      expect(err).toEqual('PlayerNotFound');
-      done();
-    });
-
-    sockets.clientSocket1?.emit('newMatch', {
-      auth: '123',
-    });
-  });
 });

@@ -1,11 +1,16 @@
-import { Match } from '../../models/Match';
 import util from './util';
 
-const newMatch: ISocketHandler = ({ auth }: { auth: string }) => {
+const moveLeader: ISocketHandler = ({ auth, matchId, position }) => {
   const player = util.getPlayer(auth);
+  const match = util.getMatch(matchId);
 
-  const match = new Match(player);
-  return ['matchCreated', { id: match.id }];
+  const [thisPlayer, anotherPlayer] = util.getPlayerRef(match, player);
+  match.moveLeader(thisPlayer, position);
+
+  return util.reflectAction(match, anotherPlayer, 'leaderMoved', {
+    ref: thisPlayer,
+    position,
+  });
 };
 
-export default newMatch;
+export default moveLeader;

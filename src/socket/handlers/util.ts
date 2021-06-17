@@ -1,4 +1,8 @@
-import { MATCH_NOT_FOUND_ERROR, PLAYER_NOT_FOUND_ERROR } from './errors';
+import {
+  MATCH_NOT_FOUND_ERROR,
+  PLAYER_NOT_FOUND_ERROR,
+  NOT_IN_THIS_MATCH_ERROR,
+} from './errors';
 import { Player } from '../../models/Player';
 import { Match } from '../../models/Match';
 
@@ -14,7 +18,28 @@ function getMatch(matchId: string): Match {
   return match;
 }
 
+function getPlayerRef(
+  match: Match,
+  player: Player
+): ['player1' | 'player2', 'player1' | 'player2'] {
+  if (match.player1.player === player) return ['player1', 'player2'];
+  if (match.player2.player === player) return ['player2', 'player1'];
+  throw new Error(NOT_IN_THIS_MATCH_ERROR);
+}
+
+function reflectAction(
+  match: Match,
+  ref: 'player1' | 'player2',
+  event: string,
+  data: any
+): [string, any] {
+  match[ref].player.socket.emit('leaderMoved', data);
+  return [event, data];
+}
+
 export default {
+  reflectAction,
   getPlayer,
   getMatch,
+  getPlayerRef,
 };

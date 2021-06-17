@@ -3,6 +3,7 @@ import handlers from './handlers';
 
 io.on('connection', (socket) => {
   socket.onAny((listener, data) => {
+    // console.log({ listener, data });
     if (typeof data !== 'object') {
       throw new Error('DataNotObject');
     }

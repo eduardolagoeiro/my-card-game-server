@@ -1,8 +1,6 @@
 import util from './util';
 
-const enterMatch: ISocketHandler = (data) => {
-  const { matchId, auth } = data;
-
+const enterMatch: ISocketHandler = ({ matchId, auth }) => {
   const player = util.getPlayer(auth);
 
   const match = util.getMatch(matchId);
