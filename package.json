@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "ts-node-dev --poll --respawn --transpile-only src/server.ts",
-    "test": "node --inspect=0.0.0.0:9229 node_modules/.bin/jest --runInBand --watchAll",
+    "test": "node --inspect=0.0.0.0:9229 node_modules/.bin/jest --runInBand --watchAll --coverage",
     "lint": "eslint --fix \"src/**\""
   },
   "keywords": [],

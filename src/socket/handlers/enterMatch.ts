@@ -1,14 +1,11 @@
-import { Match } from '../../models/Match';
-import { Player } from '../../models/Player';
+import util from './util';
 
 const enterMatch: ISocketHandler = (data) => {
   const { matchId, auth } = data;
 
-  const player = Player.get(auth);
-  if (player === undefined) throw new Error('PlayerNotFound');
+  const player = util.getPlayer(auth);
 
-  const match = Match.get(matchId);
-  if (match === undefined) throw new Error('MatchNotFound');
+  const match = util.getMatch(matchId);
 
   match.setPlayer2(player);
   match.player1.player.socket.emit('matchReady');
