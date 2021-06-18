@@ -212,3 +212,11 @@ test('two leaders moving', () => {
     'HasObstacle'
   );
 });
+
+describe('get', () => {
+  test('sucess', () => {
+    new Match(new Player('Graham'));
+    const m = new Match(new Player('Triston'));
+    expect(Match.get(m.id)).toEqual(m);
+  });
+});

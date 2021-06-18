@@ -1,11 +1,14 @@
 import { v4 } from 'uuid';
-import { Socket } from 'socket.io';
+
+interface IPlayerSocket {
+  emit: (event: string, data?: any) => void;
+}
 
 export class Player {
   id: string;
   cards: ICard[];
   name: string;
-  socket: Socket;
+  socket: IPlayerSocket;
 
   static storage: Map<string, Player> = new Map();
 
@@ -32,7 +35,7 @@ export class Player {
     Player.storage.set(this.id, this);
   }
 
-  setSocket(socket: Socket) {
+  setSocket(socket: IPlayerSocket) {
     this.socket = socket;
   }
 }

@@ -40,6 +40,7 @@ describe('moveLeader', () => {
     sockets.clientSocket1?.emit('newPlayer', { name: 'Eleanore' });
 
     setTimeout(() => {
+      expect(checkData.length).toEqual(2);
       checkData.forEach((data) => {
         expect(data.position.x).toEqual(position.x);
         expect(data.position.y).toEqual(position.y);
