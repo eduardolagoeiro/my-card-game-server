@@ -6,6 +6,7 @@ const NOT_YOUR_TURN_ERROR = 'NotYourTurn';
 
 interface ILeader {
   hasMoved: boolean;
+  position?: IPosition;
 }
 
 interface IMatchPlayer {
@@ -74,8 +75,8 @@ export class Match implements IMatch {
       player: player2,
       hand: player2.cards.slice(0, 5),
     };
-    this.placeLeader('player1', { x: 0, y: 3 });
-    this.placeLeader('player2', { x: 6, y: 3 });
+    this.placeLeader('player1', { x: 3, y: 0 });
+    this.placeLeader('player2', { x: 3, y: 6 });
   }
 
   isReady(): boolean {
@@ -111,6 +112,12 @@ export class Match implements IMatch {
       name: 'leader',
       owner: player,
     };
+    const oldPos = this[player].leader.position;
+    if (oldPos != undefined) {
+      const oldTerrain = this.findTerrain(oldPos);
+      delete oldTerrain?.slot;
+    }
+    this[player].leader.position = position;
   }
 
   moveLeader(player: 'player1' | 'player2', position: IPosition) {
@@ -120,6 +127,13 @@ export class Match implements IMatch {
     }
     if (this[player].leader.hasMoved === true) {
       throw new Error('AlreadyMoved');
+    }
+    const oldPos = this[player].leader.position || { x: 999, y: 999 };
+    if (
+      Math.abs(oldPos.x - position.x) + Math.abs(oldPos.y - position.y) !=
+      1
+    ) {
+      throw new Error('NotInRange');
     }
     this.placeLeader(player, position);
     this[player].leader.hasMoved = true;

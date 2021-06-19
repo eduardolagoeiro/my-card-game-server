@@ -7,7 +7,7 @@ describe('moveLeader', () => {
     let player1Id: '';
     let player2Id: '';
     let matchId: '';
-    const position = { x: 1, y: 3 };
+    const position = { x: 3, y: 1 };
     const checkData: any[] = [];
 
     sockets.clientSocket1?.onAny((eventName, data) => {

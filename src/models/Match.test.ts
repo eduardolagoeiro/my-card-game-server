@@ -69,7 +69,7 @@ describe('moveLeader', () => {
 
     match.setPlayer2(p2);
 
-    const position = { x: 1, y: 3 };
+    const position = { y: 1, x: 3 };
 
     match.moveLeader('player1', position);
 
@@ -94,10 +94,25 @@ describe('moveLeader', () => {
 
     match.setPlayer2(p2);
 
-    const position = { x: 1, y: 1 };
+    const position = { y: 1, x: 1 };
 
     expect(() => match.moveLeader('player2', position)).toThrowError(
       'NotYourTurn'
+    );
+  });
+
+  test('fail on NotInRange', () => {
+    const p1 = new Player('Timmy');
+    let match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const position = { y: 0, x: 0 };
+
+    expect(() => match.moveLeader('player1', position)).toThrowError(
+      'NotInRange'
     );
   });
 
@@ -109,7 +124,7 @@ describe('moveLeader', () => {
 
     match.setPlayer2(p2);
 
-    const position = { x: 10, y: 0 };
+    const position = { y: -1, x: 3 };
 
     expect(() => match.moveLeader('player1', position)).toThrowError(
       'OutOfBounds'
@@ -124,9 +139,9 @@ describe('moveLeader', () => {
 
     match.setPlayer2(p2);
 
-    match.moveLeader('player1', { x: 1, y: 3 });
+    match.moveLeader('player1', { y: 1, x: 3 });
 
-    expect(() => match.moveLeader('player1', { x: 2, y: 3 })).toThrowError(
+    expect(() => match.moveLeader('player1', { y: 2, x: 3 })).toThrowError(
       'AlreadyMoved'
     );
   });
@@ -139,9 +154,9 @@ describe('moveLeader', () => {
 
     match.setPlayer2(p2);
 
-    match.placeLeader('player2', { x: 1, y: 3 });
+    match.placeLeader('player2', { y: 1, x: 3 });
 
-    expect(() => match.moveLeader('player1', { x: 1, y: 3 })).toThrowError(
+    expect(() => match.moveLeader('player1', { y: 1, x: 3 })).toThrowError(
       'HasObstacle'
     );
   });
@@ -188,27 +203,27 @@ test('two leaders moving', () => {
 
   match.setPlayer2(p2);
 
-  match.moveLeader('player1', { x: 1, y: 3 });
+  match.moveLeader('player1', { y: 1, x: 3 });
 
   match.endTurn('player1');
 
-  match.moveLeader('player2', { x: 5, y: 3 });
+  match.moveLeader('player2', { y: 5, x: 3 });
 
   match.endTurn('player2');
 
-  match.moveLeader('player1', { x: 2, y: 3 });
+  match.moveLeader('player1', { y: 2, x: 3 });
 
   match.endTurn('player1');
 
-  match.moveLeader('player2', { x: 4, y: 3 });
+  match.moveLeader('player2', { y: 4, x: 3 });
 
   match.endTurn('player2');
 
-  match.moveLeader('player1', { x: 3, y: 3 });
+  match.moveLeader('player1', { y: 3, x: 3 });
 
   match.endTurn('player1');
 
-  expect(() => match.moveLeader('player2', { x: 3, y: 3 })).toThrowError(
+  expect(() => match.moveLeader('player2', { y: 3, x: 3 })).toThrowError(
     'HasObstacle'
   );
 });

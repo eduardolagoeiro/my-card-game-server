@@ -13,6 +13,8 @@ services:
       - PORT=4000
       - JWT_SECRET_KEY=B010B514AD927302CD6601063436B51B2ED1BFC7945DF3426796243FB356AC7F
       - DB_URL=mongodb://mongo:27017/database
+      # - DEBUG=infra:*
+      # - DEBUG=socket:server*
     links:
       - mongo
   mongo:
