@@ -1,5 +1,5 @@
 import * as Client from 'socket.io-client';
-import server from '../../server';
+import server from '../server';
 
 export default {
   init() {

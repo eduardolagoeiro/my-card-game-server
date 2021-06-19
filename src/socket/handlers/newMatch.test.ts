@@ -1,5 +1,5 @@
 import { Player } from '../../models/Player';
-import helper from './test.helper';
+import helper from '../../test/test.helper';
 
 const sockets = helper.init();
 
