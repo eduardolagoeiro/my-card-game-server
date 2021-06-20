@@ -2,13 +2,16 @@ import { v4 } from 'uuid';
 import { Player } from './Player';
 
 interface ILeader {
-  hasMoved: boolean;
   position?: IPosition;
 }
 
 interface IMatchPlayer {
   turnActions: {
     playCard: {
+      limit: number;
+      times: number;
+    };
+    moveLeader: {
       limit: number;
       times: number;
     };
@@ -34,10 +37,10 @@ const NOT_YOUR_TURN_ERROR = 'NotYourTurn';
 const MATCH_NOT_READY_ERROR = 'MatchNotReady';
 const HAS_OBSTACLE_ERROR = 'HasObstacle';
 const OUT_OF_BOUNDS_ERROR = 'OutOfBounds';
-const RANGE_ZERO_ERROR = 'RangeZeroNotValid';
+const RANGE_ZERO_ERROR = 'RangeZero';
 const NOT_IN_RANGE_ERROR = 'NotInRange';
 const LEADER_IS_NOWHERE_ERROR = 'LeaderIsNowhere';
-const ALREADY_MOVED_LEADER_ERROR = 'AlreadyMoved';
+const MOVE_LEADER_LIMIT_REACHED_ERROR = 'MoveLeaderLimitReached';
 const PLAY_CARD_LIMIT_REACHED_ERROR = 'PlayCardLimitReached';
 const CARD_NOT_FOUND_ERROR = 'CardNotFound';
 
@@ -73,11 +76,15 @@ export class Match implements IMatch {
           limit: 1,
           times: 0,
         },
+        moveLeader: {
+          limit: 1,
+          times: 0,
+        },
       },
       player: player1,
       cards: player1.cards,
       hand: player1.cards.slice(0, 5),
-      leader: { hasMoved: false },
+      leader: {},
       lifePoints: INIT_LIFE_POINTS,
     };
 
@@ -95,10 +102,12 @@ export class Match implements IMatch {
           limit: 1,
           times: 0,
         },
+        moveLeader: {
+          limit: 1,
+          times: 0,
+        },
       },
-      leader: {
-        hasMoved: false,
-      },
+      leader: {},
       lifePoints: INIT_LIFE_POINTS,
       cards: player2.cards,
       player: player2,
@@ -202,22 +211,25 @@ export class Match implements IMatch {
   moveLeader(player: IPlayerRef, position: IPosition) {
     this.throwIfNotReady();
     this.throwIfNotYourTurn(player);
-    if (this[player].leader.hasMoved === true) {
-      throw new Error(ALREADY_MOVED_LEADER_ERROR);
+    const { moveLeader } = this[player].turnActions;
+    if (moveLeader.times >= moveLeader.limit) {
+      throw new Error(MOVE_LEADER_LIMIT_REACHED_ERROR);
     }
     const oldPos = this.getLeaderPos(player);
 
     this.throwIfNotInRange(oldPos, position);
     this.placeLeader(player, position);
-    this[player].leader.hasMoved = true;
+    moveLeader.times++;
   }
 
   endTurn(player: IPlayerRef) {
     this.throwIfNotReady();
     this.throwIfNotYourTurn(player);
-    const p = player === 'player1' ? 'player2' : 'player1';
-    this.turnOwner = p;
-    this[p].leader.hasMoved = false;
+    const anotherRef = player === 'player1' ? 'player2' : 'player1';
+    this.turnOwner = anotherRef;
+    const anotherPlayer = this[anotherRef];
+    anotherPlayer.turnActions.playCard.times = 0;
+    anotherPlayer.turnActions.moveLeader.times = 0;
   }
 
   playCard(player: IPlayerRef, cardId: string, position: IPosition) {

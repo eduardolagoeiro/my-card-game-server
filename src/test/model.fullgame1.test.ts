@@ -12,19 +12,19 @@ test('success', (done) => {
 
   match.moveLeader('player1', { x: 3, y: 1 });
 
-  // let card = match.player1.hand[0];
+  let cardId = match.player1.hand[0]?.id || '';
 
-  // match.playCard('player1', card.id, { x: 2, y: 2});
+  match.playCard('player1', cardId, { x: 2, y: 2 });
 
-  // match.moveCard(card.id, { x: 2, y: 3});
+  // match.moveCard(cardId, { x: 2, y: 3});
 
   match.endTurn('player1');
 
   match.moveLeader('player2', { x: 2, y: 6 });
 
-  // card = match.player2.hand[0];
+  cardId = match.player2.hand[0]?.id || '';
 
-  // match.playCard('player2', card.id, { x: 2, y: 5});
+  match.playCard('player2', cardId, { x: 2, y: 5 });
 
   // match.setCard(card.id, 'defense');
 
@@ -38,9 +38,9 @@ test('success', (done) => {
 
   // match.moveCard(card.id, { x: 2, y: 4});
 
-  // card = match.player1.hand[0];
+  cardId = match.player1.hand[0]?.id || '';
 
-  // match.playCard('player1', card.id, { x: 3, y: 3});
+  match.playCard('player1', cardId, { x: 3, y: 3 });
 
   // match.setCard(card.id, 'flip');
 
@@ -48,9 +48,9 @@ test('success', (done) => {
 
   match.moveLeader('player2', { x: 1, y: 6 });
 
-  // card = match.player2.hand[0];
+  cardId = match.player2.hand[0]?.id || '';
 
-  // match.playCard('player2', card.id, { x: 1, y: 5});
+  match.playCard('player2', cardId, { x: 1, y: 5 });
 
   match.endTurn('player2');
 

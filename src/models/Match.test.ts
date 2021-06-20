@@ -129,7 +129,7 @@ describe('moveLeader', () => {
     );
   });
 
-  test('fail on AlreadyMoved', () => {
+  test('fail on MoveLeaderLimitReached', () => {
     const p1 = new Player('Timmy');
     let match = new Match(p1);
 
@@ -140,7 +140,7 @@ describe('moveLeader', () => {
     match.moveLeader('player1', { y: 1, x: 3 });
 
     expect(() => match.moveLeader('player1', { y: 2, x: 3 })).toThrowError(
-      'AlreadyMoved'
+      'MoveLeaderLimitReached'
     );
   });
 
@@ -447,12 +447,22 @@ describe('throwIfNotInRange', () => {
       ).toThrowError('NotInRange');
     });
 
-    test('fail on RangeZeroNotValid', () => {
+    test('fail on RangeZero', () => {
       new Match(new Player('Graham'));
       const m = new Match(new Player('Triston'));
       expect(() =>
         m.throwIfNotInRange({ x: 0, y: 0 }, { x: 0, y: 0 })
-      ).toThrowError('RangeZeroNotValid');
+      ).toThrowError('RangeZero');
+    });
+
+    test('accept RangeZero', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange(
+        { x: 0, y: 0 },
+        { x: 0, y: 0 },
+        { isZeroValid: true }
+      );
     });
   });
 
@@ -507,12 +517,12 @@ describe('throwIfNotInRange', () => {
       m.throwIfNotInRange({ x: 0, y: 0 }, { x: -1, y: -1 }, { squared: true }); // SW
     });
 
-    test('fail on RangeZeroNotValid', () => {
+    test('fail on RangeZero', () => {
       new Match(new Player('Graham'));
       const m = new Match(new Player('Triston'));
       expect(() =>
         m.throwIfNotInRange({ x: 0, y: 0 }, { x: 0, y: 0 })
-      ).toThrowError('RangeZeroNotValid');
+      ).toThrowError('RangeZero');
     });
   });
 });
