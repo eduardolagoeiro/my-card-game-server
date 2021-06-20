@@ -10,6 +10,12 @@ interface ILeader {
 }
 
 interface IMatchPlayer {
+  turnActions: {
+    playCard: {
+      limit: number;
+      times: number;
+    };
+  };
   leader: ILeader;
   player: Player;
   lifePoints: number;
@@ -51,6 +57,12 @@ export class Match implements IMatch {
     this.map = map;
     this.turnOwner = 'player1';
     this.player1 = {
+      turnActions: {
+        playCard: {
+          limit: 1,
+          times: 0,
+        },
+      },
       player: player1,
       cards: player1.cards,
       hand: player1.cards.slice(0, 5),
@@ -67,6 +79,12 @@ export class Match implements IMatch {
       throw new Error('Player2AlreadySet');
     }
     this.player2 = {
+      turnActions: {
+        playCard: {
+          limit: 1,
+          times: 0,
+        },
+      },
       leader: {
         hasMoved: false,
       },
@@ -89,24 +107,36 @@ export class Match implements IMatch {
     }
   }
 
+  throwIfNotYourTurn(player: IPlayerRef) {
+    if (this.turnOwner !== player) {
+      throw new Error(NOT_YOUR_TURN_ERROR);
+    }
+  }
+
+  throwIfObstacle(terrain: ITerrain) {
+    if (terrain?.slot !== undefined) {
+      throw new Error('HasObstacle');
+    }
+  }
+
   findTerrain(position: IPosition): ITerrain | undefined {
     const terrain = this.map.find(
       (el) => el.x === position.x && el.y === position.y
     );
+    return terrain;
+  }
+
+  getTerrain(position: IPosition): ITerrain {
+    const terrain = this.findTerrain(position);
     if (terrain === undefined) {
       throw new Error('OutOfBounds');
     }
     return terrain;
   }
 
-  placeLeader(player: 'player1' | 'player2', position: IPosition) {
-    const terrain = this.findTerrain(position);
-    if (terrain === undefined) {
-      throw new Error('OutOfBounds');
-    }
-    if (terrain.slot !== undefined) {
-      throw new Error('HasObstacle');
-    }
+  placeLeader(player: IPlayerRef, position: IPosition) {
+    const terrain = this.getTerrain(position);
+    this.throwIfObstacle(terrain);
     terrain.slot = {
       instance: this[player].leader,
       name: 'leader',
@@ -120,33 +150,100 @@ export class Match implements IMatch {
     this[player].leader.position = position;
   }
 
-  moveLeader(player: 'player1' | 'player2', position: IPosition) {
-    this.throwIfNotReady();
-    if (this.turnOwner !== player) {
-      throw new Error(NOT_YOUR_TURN_ERROR);
+  throwIfNotInRange(
+    pos0: IPosition,
+    position: IPosition,
+    opt: {
+      maxRange?: number;
+      isZeroValid?: boolean;
+      squared?: boolean;
+    } = {}
+  ) {
+    const options = {
+      maxRange: 1,
+      isZeroValid: false,
+      squared: false,
+      ...opt,
+    };
+    const deltaX = Math.abs(pos0.x - position.x);
+    const deltaY = Math.abs(pos0.y - position.y);
+    const distance = deltaX + deltaY;
+    if (options.isZeroValid === false && distance === 0) {
+      throw new Error('RangeZeroNotValid');
     }
+    const maxRange = options.squared ? options.maxRange * 2 : options.maxRange;
+    if (distance != 0 && distance > maxRange) {
+      throw new Error('NotInRange');
+    }
+    if (options.squared) {
+      if (deltaX > maxRange / 2 || deltaY > maxRange / 2) {
+        throw new Error('NotInRange');
+      }
+    }
+  }
+
+  getLeaderPos(player: IPlayerRef) {
+    const leaderPos = this[player].leader.position;
+    if (leaderPos === undefined) throw new Error('LeaderIsNowhere');
+    return leaderPos;
+  }
+
+  moveLeader(player: IPlayerRef, position: IPosition) {
+    this.throwIfNotReady();
+    this.throwIfNotYourTurn(player);
     if (this[player].leader.hasMoved === true) {
       throw new Error('AlreadyMoved');
     }
-    const oldPos = this[player].leader.position || { x: 999, y: 999 };
-    if (
-      Math.abs(oldPos.x - position.x) + Math.abs(oldPos.y - position.y) !=
-      1
-    ) {
-      throw new Error('NotInRange');
-    }
+    const oldPos = this.getLeaderPos(player);
+
+    this.throwIfNotInRange(oldPos, position);
     this.placeLeader(player, position);
     this[player].leader.hasMoved = true;
   }
 
-  endTurn(player: 'player1' | 'player2') {
+  endTurn(player: IPlayerRef) {
     this.throwIfNotReady();
-    if (this.turnOwner === player) {
-      const p = player === 'player1' ? 'player2' : 'player1';
-      this.turnOwner = p;
-      this[p].leader.hasMoved = false;
-    } else {
-      throw new Error(NOT_YOUR_TURN_ERROR);
+    this.throwIfNotYourTurn(player);
+    const p = player === 'player1' ? 'player2' : 'player1';
+    this.turnOwner = p;
+    this[p].leader.hasMoved = false;
+  }
+
+  playCard(player: IPlayerRef, cardId: string, position: IPosition) {
+    this.throwIfNotReady();
+
+    const { playCard } = this[player].turnActions;
+    if (playCard.times >= playCard.limit) {
+      throw new Error('PlayCardLimitReached');
     }
+    this.throwIfNotYourTurn(player);
+
+    const terrain = this.getTerrain(position);
+
+    this.throwIfObstacle(terrain);
+
+    const cardIndex = this[player].hand.findIndex((el) => el.id === cardId);
+
+    const card = this[player].hand[cardIndex];
+
+    if (card === undefined) throw new Error('CardNotFound');
+
+    const leaderPos = this.getLeaderPos(player);
+
+    this.throwIfNotInRange(leaderPos, position, {
+      squared: true,
+    });
+
+    terrain.slot = {
+      name: 'card',
+      instance: card,
+      owner: player,
+    };
+
+    this[player].hand.splice(cardIndex, 1);
+
+    card.position = position;
+
+    playCard.times++;
   }
 }

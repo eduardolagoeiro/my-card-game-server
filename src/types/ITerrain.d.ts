@@ -1,7 +1,7 @@
 interface ITerrainSlot {
-  name: string;
+  name: 'card' | 'leader';
   instance: any;
-  owner?: 'player1' | 'player2';
+  owner?: IPlayerRef;
 }
 
 interface ITerrain {

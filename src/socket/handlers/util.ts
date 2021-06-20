@@ -18,10 +18,7 @@ function getMatch(matchId: string): Match {
   return match;
 }
 
-function getPlayerRef(
-  match: Match,
-  player: Player
-): ['player1' | 'player2', 'player1' | 'player2'] {
+function getPlayerRef(match: Match, player: Player): [IPlayerRef, IPlayerRef] {
   if (match.player1?.player === player) return ['player1', 'player2'];
   if (match.player2?.player === player) return ['player2', 'player1'];
   throw new Error(NOT_IN_THIS_MATCH_ERROR);
@@ -29,7 +26,7 @@ function getPlayerRef(
 
 function reflectAction(
   match: Match,
-  ref: 'player1' | 'player2',
+  ref: IPlayerRef,
   event: string,
   data: any
 ): [string, any] {

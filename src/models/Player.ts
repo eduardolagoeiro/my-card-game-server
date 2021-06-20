@@ -20,6 +20,7 @@ export class Player {
     const cards = [];
     for (let i = 0; i < 40; i += 1) {
       const card: ICard = {
+        id: v4(),
         name: `${name}_${i}`,
         color: '#' + (Math.random() * 0xffffff).toString(16).split('.')[0],
         attackPoints: 1,
