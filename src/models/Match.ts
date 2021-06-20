@@ -1,8 +1,5 @@
 import { v4 } from 'uuid';
 import { Player } from './Player';
-const INIT_LIFE_POINTS = 4000;
-
-const NOT_YOUR_TURN_ERROR = 'NotYourTurn';
 
 interface ILeader {
   hasMoved: boolean;
@@ -29,6 +26,20 @@ interface IMatch {
   player2?: IMatchPlayer;
   map: ITerrain[];
 }
+
+const INIT_LIFE_POINTS = 4000;
+
+const PLAYER_2_ALREADY_SETTED_ERROR = 'Player2AlreadySet';
+const NOT_YOUR_TURN_ERROR = 'NotYourTurn';
+const MATCH_NOT_READY_ERROR = 'MatchNotReady';
+const HAS_OBSTACLE_ERROR = 'HasObstacle';
+const OUT_OF_BOUNDS_ERROR = 'OutOfBounds';
+const RANGE_ZERO_ERROR = 'RangeZeroNotValid';
+const NOT_IN_RANGE_ERROR = 'NotInRange';
+const LEADER_IS_NOWHERE_ERROR = 'LeaderIsNowhere';
+const ALREADY_MOVED_LEADER_ERROR = 'AlreadyMoved';
+const PLAY_CARD_LIMIT_REACHED_ERROR = 'PlayCardLimitReached';
+const CARD_NOT_FOUND_ERROR = 'CardNotFound';
 
 export class Match implements IMatch {
   id: string;
@@ -76,7 +87,7 @@ export class Match implements IMatch {
 
   setPlayer2(player2: Player) {
     if (this.player2) {
-      throw new Error('Player2AlreadySet');
+      throw new Error(PLAYER_2_ALREADY_SETTED_ERROR);
     }
     this.player2 = {
       turnActions: {
@@ -103,7 +114,7 @@ export class Match implements IMatch {
 
   throwIfNotReady() {
     if (!this.isReady()) {
-      throw new Error('MatchNotReady');
+      throw new Error(MATCH_NOT_READY_ERROR);
     }
   }
 
@@ -114,8 +125,8 @@ export class Match implements IMatch {
   }
 
   throwIfObstacle(terrain: ITerrain) {
-    if (terrain?.slot !== undefined) {
-      throw new Error('HasObstacle');
+    if (terrain.slot !== undefined) {
+      throw new Error(HAS_OBSTACLE_ERROR);
     }
   }
 
@@ -129,7 +140,7 @@ export class Match implements IMatch {
   getTerrain(position: IPosition): ITerrain {
     const terrain = this.findTerrain(position);
     if (terrain === undefined) {
-      throw new Error('OutOfBounds');
+      throw new Error(OUT_OF_BOUNDS_ERROR);
     }
     return terrain;
   }
@@ -169,22 +180,22 @@ export class Match implements IMatch {
     const deltaY = Math.abs(pos0.y - position.y);
     const distance = deltaX + deltaY;
     if (options.isZeroValid === false && distance === 0) {
-      throw new Error('RangeZeroNotValid');
+      throw new Error(RANGE_ZERO_ERROR);
     }
     const maxRange = options.squared ? options.maxRange * 2 : options.maxRange;
     if (distance != 0 && distance > maxRange) {
-      throw new Error('NotInRange');
+      throw new Error(NOT_IN_RANGE_ERROR);
     }
     if (options.squared) {
       if (deltaX > maxRange / 2 || deltaY > maxRange / 2) {
-        throw new Error('NotInRange');
+        throw new Error(NOT_IN_RANGE_ERROR);
       }
     }
   }
 
   getLeaderPos(player: IPlayerRef) {
     const leaderPos = this[player].leader.position;
-    if (leaderPos === undefined) throw new Error('LeaderIsNowhere');
+    if (leaderPos === undefined) throw new Error(LEADER_IS_NOWHERE_ERROR);
     return leaderPos;
   }
 
@@ -192,7 +203,7 @@ export class Match implements IMatch {
     this.throwIfNotReady();
     this.throwIfNotYourTurn(player);
     if (this[player].leader.hasMoved === true) {
-      throw new Error('AlreadyMoved');
+      throw new Error(ALREADY_MOVED_LEADER_ERROR);
     }
     const oldPos = this.getLeaderPos(player);
 
@@ -214,7 +225,7 @@ export class Match implements IMatch {
 
     const { playCard } = this[player].turnActions;
     if (playCard.times >= playCard.limit) {
-      throw new Error('PlayCardLimitReached');
+      throw new Error(PLAY_CARD_LIMIT_REACHED_ERROR);
     }
     this.throwIfNotYourTurn(player);
 
@@ -226,7 +237,7 @@ export class Match implements IMatch {
 
     const card = this[player].hand[cardIndex];
 
-    if (card === undefined) throw new Error('CardNotFound');
+    if (card === undefined) throw new Error(CARD_NOT_FOUND_ERROR);
 
     const leaderPos = this.getLeaderPos(player);
 

@@ -386,3 +386,149 @@ describe('get', () => {
     expect(Match.get(m.id)).toEqual(m);
   });
 });
+
+describe('throwIfNotInRange', () => {
+  describe('defaults', () => {
+    test('success NORTH', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: 0, y: 1 }); // N
+    });
+
+    test('success SOUTH', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: 0, y: -1 }); // S
+    });
+
+    test('success EAST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: 1, y: 0 }); // E
+    });
+
+    test('success WEST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: -1, y: 0 }); // W
+    });
+
+    test('fail on NotInRange NORTH EAST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      expect(
+        () => m.throwIfNotInRange({ x: 0, y: 0 }, { x: 1, y: 1 }) // NE
+      ).toThrowError('NotInRange');
+    });
+
+    test('fail on NotInRange SOUTH EAST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      expect(
+        () => m.throwIfNotInRange({ x: 0, y: 0 }, { x: 1, y: -1 }) // SE
+      ).toThrowError('NotInRange');
+    });
+
+    test('fail on NotInRange NORTH WEST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      expect(
+        () => m.throwIfNotInRange({ x: 0, y: 0 }, { x: -1, y: 1 }) // NW
+      ).toThrowError('NotInRange');
+    });
+
+    test('fail on NotInRange SOUTH WEST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      expect(
+        () => m.throwIfNotInRange({ x: 0, y: 0 }, { x: -1, y: -1 }) // SW
+      ).toThrowError('NotInRange');
+    });
+
+    test('fail on RangeZeroNotValid', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      expect(() =>
+        m.throwIfNotInRange({ x: 0, y: 0 }, { x: 0, y: 0 })
+      ).toThrowError('RangeZeroNotValid');
+    });
+  });
+
+  describe('squared', () => {
+    test('success NORTH', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: 0, y: 1 }, { squared: true }); // N
+    });
+
+    test('success SOUTH', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: 0, y: -1 }, { squared: true }); // S
+    });
+
+    test('success EAST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: 1, y: 0 }, { squared: true }); // E
+    });
+
+    test('success WEST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: -1, y: 0 }, { squared: true }); // W
+    });
+
+    test('success NORTH EAST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: 1, y: 1 }, { squared: true }); // NE
+    });
+
+    test('success SOUTH EAST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: 1, y: -1 }, { squared: true }); // SE
+    });
+
+    test('success NORTH WEST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: -1, y: 1 }, { squared: true }); // NW
+    });
+
+    test('success SOUTH WEST', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      m.throwIfNotInRange({ x: 0, y: 0 }, { x: -1, y: -1 }, { squared: true }); // SW
+    });
+
+    test('fail on RangeZeroNotValid', () => {
+      new Match(new Player('Graham'));
+      const m = new Match(new Player('Triston'));
+      expect(() =>
+        m.throwIfNotInRange({ x: 0, y: 0 }, { x: 0, y: 0 })
+      ).toThrowError('RangeZeroNotValid');
+    });
+  });
+});
+
+describe('getLeaderPos', () => {
+  test('success', () => {
+    new Match(new Player('Graham'));
+    const m = new Match(new Player('Triston'));
+    m.setPlayer2(new Player('Ara'));
+    expect(m.getLeaderPos('player1')).toMatchObject({ x: 3, y: 0 });
+    expect(m.getLeaderPos('player2')).toMatchObject({ x: 3, y: 6 });
+  });
+
+  test('fail on LeaderIsNowhere', () => {
+    new Match(new Player('Graham'));
+    const m = new Match(new Player('Triston'));
+    expect(() => m.getLeaderPos('player1')).toThrowError('LeaderIsNowhere');
+  });
+});
