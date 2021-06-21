@@ -1,6 +1,11 @@
+interface ITerrainSlotInstance {
+  position?: IPosition;
+  id: string;
+}
+
 interface ITerrainSlot {
   name: 'card' | 'leader';
-  instance: any;
+  instance: ITerrainSlotInstance;
   owner?: IPlayerRef;
 }
 

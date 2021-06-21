@@ -10,67 +10,85 @@ test('success', (done) => {
 
   match.setPlayer2(player2);
 
+  // player 1 #1
+
   match.moveLeader('player1', { x: 3, y: 1 });
 
   let cardId = match.player1.hand[0]?.id || '';
 
-  match.playCard('player1', cardId, { x: 2, y: 2 });
+  const player1CardIds: string[] = [];
 
-  // match.moveCard(cardId, { x: 2, y: 3});
+  player1CardIds.push(cardId);
+
+  match.playCard('player1', player1CardIds[0] || '', { x: 2, y: 2 });
+
+  match.moveCard('player1', player1CardIds[0] || '', { x: 2, y: 3 });
 
   match.endTurn('player1');
+
+  // player 2 #1
 
   match.moveLeader('player2', { x: 2, y: 6 });
 
   cardId = match.player2.hand[0]?.id || '';
 
-  match.playCard('player2', cardId, { x: 2, y: 5 });
+  const player2CardIds: string[] = [];
+
+  player2CardIds.push(cardId);
+
+  match.playCard('player2', player2CardIds[0] || '', { x: 2, y: 5 });
 
   // match.setCard(card.id, 'defense');
 
   match.endTurn('player2');
 
+  // player 1 #2
+
   match.moveLeader('player1', { x: 3, y: 2 });
 
-  // let fieldCards = match.getFieldCards('player1');
-
-  // card = fieldCards[0];
-
-  // match.moveCard(card.id, { x: 2, y: 4});
+  match.moveCard('player1', player1CardIds[0] || '', { x: 2, y: 4 });
 
   cardId = match.player1.hand[0]?.id || '';
 
-  match.playCard('player1', cardId, { x: 3, y: 3 });
+  player1CardIds.push(cardId);
+
+  match.playCard('player1', player1CardIds[1] || '', { x: 3, y: 3 });
 
   // match.setCard(card.id, 'flip');
 
   match.endTurn('player1');
 
+  // player 2 #2
+
   match.moveLeader('player2', { x: 1, y: 6 });
 
-  cardId = match.player2.hand[0]?.id || '';
-
-  match.playCard('player2', cardId, { x: 1, y: 5 });
+  match.playCard('player2', match.player2.hand[0]?.id || '', { x: 1, y: 5 });
 
   match.endTurn('player2');
 
-  // let fieldCards = match.getFieldCards('player1');
+  // player 1 #3
 
-  // card = fieldCards[0];
-
-  // match.moveCard(card.id, { x: 2, y: 5}); // attack vs defense
+  match.moveCard('player1', player1CardIds[0] || '', { x: 2, y: 5 }); // attack vs defense
 
   match.endTurn('player1');
 
+  // player 2 #3
+
   match.endTurn('player2');
 
-  // match.moveCard(card.id, { x: 1, y: 5}); // attack vs attack
+  // player 1 #4
+
+  match.moveCard('player1', player1CardIds[0] || '', { x: 1, y: 5 }); // attack vs attack
 
   match.endTurn('player1');
 
+  // player 2 #4
+
   match.endTurn('player2');
 
-  // match.moveCard(card.id, { x: 1, y: 6}); // attack vs leader
+  // player 1 #5
+
+  match.moveCard('player1', player1CardIds[0] || '', { x: 1, y: 6 }); // attack vs leader
 
   // match.result()
 

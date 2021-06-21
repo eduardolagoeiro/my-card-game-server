@@ -1,35 +1,6 @@
 import { v4 } from 'uuid';
 import { Player } from './Player';
 
-interface ILeader {
-  position?: IPosition;
-}
-
-interface IMatchPlayer {
-  turnActions: {
-    playCard: {
-      limit: number;
-      times: number;
-    };
-    moveLeader: {
-      limit: number;
-      times: number;
-    };
-  };
-  leader: ILeader;
-  player: Player;
-  lifePoints: number;
-  cards: ICard[];
-  hand: ICard[];
-}
-
-interface IMatch {
-  turnOwner: string;
-  player1: IMatchPlayer;
-  player2?: IMatchPlayer;
-  map: ITerrain[];
-}
-
 const INIT_LIFE_POINTS = 4000;
 
 const PLAYER_2_ALREADY_SETTED_ERROR = 'Player2AlreadySet';
@@ -43,6 +14,7 @@ const LEADER_IS_NOWHERE_ERROR = 'LeaderIsNowhere';
 const MOVE_LEADER_LIMIT_REACHED_ERROR = 'MoveLeaderLimitReached';
 const PLAY_CARD_LIMIT_REACHED_ERROR = 'PlayCardLimitReached';
 const CARD_NOT_FOUND_ERROR = 'CardNotFound';
+const MOVE_CARD_LIMIT_REACHED_ERROR = 'MoveCardLimitReached';
 
 export class Match implements IMatch {
   id: string;
@@ -80,11 +52,17 @@ export class Match implements IMatch {
           limit: 1,
           times: 0,
         },
+        moveCards: {
+          limit: 1,
+          cards: new Map(),
+        },
       },
       player: player1,
       cards: player1.cards,
       hand: player1.cards.slice(0, 5),
-      leader: {},
+      leader: {
+        id: v4(),
+      },
       lifePoints: INIT_LIFE_POINTS,
     };
 
@@ -106,8 +84,14 @@ export class Match implements IMatch {
           limit: 1,
           times: 0,
         },
+        moveCards: {
+          limit: 1,
+          cards: new Map(),
+        },
       },
-      leader: {},
+      leader: {
+        id: v4(),
+      },
       lifePoints: INIT_LIFE_POINTS,
       cards: player2.cards,
       player: player2,
@@ -154,20 +138,63 @@ export class Match implements IMatch {
     return terrain;
   }
 
-  placeLeader(player: IPlayerRef, position: IPosition) {
+  placeInPosition(
+    owner: IPlayerRef,
+    position: IPosition,
+    instance: ICard | ILeader,
+    instanceName: 'card' | 'leader'
+  ) {
     const terrain = this.getTerrain(position);
     this.throwIfObstacle(terrain);
+
     terrain.slot = {
-      instance: this[player].leader,
-      name: 'leader',
-      owner: player,
+      instance,
+      name: instanceName,
+      owner: owner,
     };
-    const oldPos = this[player].leader.position;
+
+    const oldPos = instance.position;
+
     if (oldPos != undefined) {
       const oldTerrain = this.findTerrain(oldPos);
       delete oldTerrain?.slot;
     }
-    this[player].leader.position = position;
+    instance.position = position;
+  }
+
+  placeLeader(player: IPlayerRef, position: IPosition) {
+    this.placeInPosition(player, position, this[player].leader, 'leader');
+  }
+
+  placeCard(
+    player: IPlayerRef,
+    card: ITerrainSlotInstance,
+    position: IPosition
+  ) {
+    this.placeInPosition(player, position, card, 'card');
+  }
+
+  moveCard(player: IPlayerRef, cardId: string, position: IPosition) {
+    const { moveCards } = this[player].turnActions;
+    const moveCardTimes = moveCards.cards.get(cardId) || 0;
+    if (moveCardTimes >= moveCards.limit) {
+      throw new Error(MOVE_CARD_LIMIT_REACHED_ERROR);
+    }
+
+    const terrain = this.map.find((t) => {
+      return (
+        t.slot?.instance.id === cardId &&
+        t.slot.owner === player &&
+        t.slot.name === 'card'
+      );
+    });
+    const instance = terrain?.slot?.instance;
+    if (instance === undefined) {
+      throw new Error(CARD_NOT_FOUND_ERROR);
+    }
+    const card = instance;
+    this.placeCard(player, card, position);
+    moveCards.cards.set(cardId, moveCardTimes + 1);
   }
 
   throwIfNotInRange(
@@ -230,6 +257,7 @@ export class Match implements IMatch {
     const anotherPlayer = this[anotherRef];
     anotherPlayer.turnActions.playCard.times = 0;
     anotherPlayer.turnActions.moveLeader.times = 0;
+    anotherPlayer.turnActions.moveCards.cards = new Map();
   }
 
   playCard(player: IPlayerRef, cardId: string, position: IPosition) {

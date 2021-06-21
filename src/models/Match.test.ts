@@ -169,6 +169,14 @@ describe('endTurn', () => {
 
     match.setPlayer2(p2);
 
+    match.moveLeader('player1', { x: 3, y: 1 });
+
+    const cardId = match.player1.hand[0]?.id || '';
+
+    match.playCard('player1', cardId, { x: 3, y: 2 });
+
+    match.moveCard('player1', cardId, { x: 3, y: 3 });
+
     match.endTurn('player1');
 
     expect(match.turnOwner).toEqual('player2');
@@ -176,6 +184,10 @@ describe('endTurn', () => {
     match.endTurn('player2');
 
     expect(match.turnOwner).toEqual('player1');
+
+    expect(match.player1.turnActions.moveCards.cards.size).toEqual(0);
+    expect(match.player1.turnActions.playCard.times).toEqual(0);
+    expect(match.player1.turnActions.moveLeader.times).toEqual(0);
   });
 
   test('fail on MatchNotReady', () => {
@@ -336,7 +348,7 @@ describe('playCard', () => {
     const terrain = match.getTerrain(position);
 
     terrain.slot = {
-      instance: null,
+      instance: match.player1.leader,
       name: 'card',
     };
 
@@ -540,5 +552,73 @@ describe('getLeaderPos', () => {
     new Match(new Player('Graham'));
     const m = new Match(new Player('Triston'));
     expect(() => m.getLeaderPos('player1')).toThrowError('LeaderIsNowhere');
+  });
+});
+
+describe('moveCard', () => {
+  test('success', () => {
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const position = { x: 2, y: 1 };
+
+    const card = match.player1.hand[0];
+
+    const cardId: string = card?.id || '';
+
+    match.playCard('player1', cardId, position);
+
+    const to = { x: position.x, y: position.y + 1 };
+    match.moveCard('player1', cardId, to);
+
+    const terrainTo = match.getTerrain(to);
+
+    expect(terrainTo.slot?.instance).toEqual(card);
+
+    expect(match.player1.turnActions.playCard.times).toEqual(1);
+
+    expect(card?.position).toMatchObject(to);
+  });
+
+  test('fail on CardNotFound', () => {
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const card = match.player2.hand[0];
+
+    const cardId: string = card?.id || '';
+
+    expect(() =>
+      match.moveCard('player1', cardId, { x: 2, y: 1 })
+    ).toThrowError('CardNotFound');
+  });
+
+  test('fail on MoveCardLimitReached', () => {
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const card = match.player1.hand[0];
+
+    const cardId: string = card?.id || '';
+
+    match.playCard('player1', cardId, { x: 2, y: 1 });
+
+    match.moveCard('player1', cardId, { x: 2, y: 2 });
+
+    expect(() =>
+      match.moveCard('player1', cardId, { x: 2, y: 3 })
+    ).toThrowError('MoveCardLimitReached');
   });
 });
