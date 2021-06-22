@@ -621,4 +621,102 @@ describe('moveCard', () => {
       match.moveCard('player1', cardId, { x: 2, y: 3 })
     ).toThrowError('MoveCardLimitReached');
   });
+
+  test('fail on NotInRange', () => {
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const position = { x: 2, y: 1 };
+
+    const card = match.player1.hand[0];
+
+    const cardId: string = card?.id || '';
+
+    match.playCard('player1', cardId, position);
+
+    const to = { x: position.x, y: position.y + 2 };
+
+    expect(() => match.moveCard('player1', cardId, to)).toThrowError(
+      'NotInRange'
+    );
+  });
+
+  test('fail on OutOfBounds', () => {
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const position = { x: 2, y: 0 };
+
+    const card = match.player1.hand[0];
+
+    const cardId: string = card?.id || '';
+
+    match.playCard('player1', cardId, position);
+
+    const to = { x: position.x, y: -1 };
+
+    expect(() => match.moveCard('player1', cardId, to)).toThrowError(
+      'OutOfBounds'
+    );
+  });
+
+  test('fail on HasObstacle', () => {
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const position = { x: 2, y: 0 };
+
+    const card = match.player1.hand[0];
+
+    const cardId: string = card?.id || '';
+
+    match.playCard('player1', cardId, position);
+
+    const to = { x: 3, y: 0 };
+
+    expect(() => match.moveCard('player1', cardId, to)).toThrowError(
+      'HasObstacle'
+    );
+  });
+
+  test('card attack win', () => {
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const cardp2 = match.player2.hand[0];
+
+    if (cardp2 === undefined) throw new Error('card undef');
+
+    cardp2.attackPoints = 1;
+
+    match.placeCard('player2', cardp2, { x: 3, y: 1 });
+
+    const card = match.player1.hand[0];
+
+    if (card) card.attackPoints = 10;
+
+    const cardId: string = card?.id || '';
+
+    match.playCard('player1', cardId, { x: 2, y: 1 });
+
+    match.moveCard('player1', cardId, { x: 3, y: 1 });
+
+    expect(match.player2.lifePoints).toEqual(11);
+  });
 });

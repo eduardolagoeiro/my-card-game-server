@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import { Player } from './Player';
 
-const INIT_LIFE_POINTS = 4000;
+const INIT_LIFE_POINTS = 20;
 
 const PLAYER_2_ALREADY_SETTED_ERROR = 'Player2AlreadySet';
 const NOT_YOUR_TURN_ERROR = 'NotYourTurn';
@@ -15,6 +15,7 @@ const MOVE_LEADER_LIMIT_REACHED_ERROR = 'MoveLeaderLimitReached';
 const PLAY_CARD_LIMIT_REACHED_ERROR = 'PlayCardLimitReached';
 const CARD_NOT_FOUND_ERROR = 'CardNotFound';
 const MOVE_CARD_LIMIT_REACHED_ERROR = 'MoveCardLimitReached';
+// const FRIENDLY_FIRE_ERROR = 'FriendlyFireError';
 
 export class Match implements IMatch {
   id: string;
@@ -174,6 +175,36 @@ export class Match implements IMatch {
     this.placeInPosition(player, position, card, 'card');
   }
 
+  cardAttack(c1: ICard, c2: ICard): IPlayerRef | undefined {
+    const position =
+      c1.attackPoints > c2.attackPoints ? c2.position : c1.position;
+    if (position) {
+      const t = this.getTerrain(position);
+      const owner = t.slot?.owner;
+      if (owner) {
+        this[owner].lifePoints -= c1.attackPoints - c2.attackPoints;
+      }
+      delete t.slot;
+      return owner;
+    }
+    return undefined;
+  }
+
+  handleContact(
+    _player: IPlayerRef,
+    card: ICard,
+    targetSlot: ITerrainSlot
+  ): IPlayerRef | undefined {
+    // if (targetSlot.owner === player) {
+    //   throw new Error(FRIENDLY_FIRE_ERROR);
+    // }
+    if (targetSlot.name === 'card') {
+      // @ts-ignore
+      return this.cardAttack(card, targetSlot.instance);
+    }
+    return undefined;
+  }
+
   moveCard(player: IPlayerRef, cardId: string, position: IPosition) {
     const { moveCards } = this[player].turnActions;
     const moveCardTimes = moveCards.cards.get(cardId) || 0;
@@ -188,10 +219,21 @@ export class Match implements IMatch {
         t.slot.name === 'card'
       );
     });
+
     const instance = terrain?.slot?.instance;
-    if (instance === undefined) {
+    if (instance === undefined || instance.position === undefined) {
       throw new Error(CARD_NOT_FOUND_ERROR);
     }
+    this.throwIfNotInRange(instance.position, position);
+
+    const targetTerrain = this.findTerrain(position);
+    const targetSlot = targetTerrain?.slot;
+    if (targetTerrain !== undefined && targetSlot !== undefined) {
+      // @ts-ignore
+      const looser = this.handleContact(player, instance, targetSlot);
+      if (looser === player) return;
+    }
+
     const card = instance;
     this.placeCard(player, card, position);
     moveCards.cards.set(cardId, moveCardTimes + 1);

@@ -16,6 +16,8 @@ test('success', (done) => {
 
   let cardId = match.player1.hand[0]?.id || '';
 
+  if (match.player1.hand[0]) match.player1.hand[0].attackPoints = 10;
+
   const player1CardIds: string[] = [];
 
   player1CardIds.push(cardId);
