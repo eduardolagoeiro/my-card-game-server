@@ -77,11 +77,7 @@ describe('moveLeader', () => {
 
     expect(terrain).toBeDefined();
 
-    expect(terrain?.slot?.name).toEqual('leader');
-
-    expect(terrain?.slot?.owner).toEqual('player1');
-
-    expect(terrain?.slot?.instance).toEqual(match.player1.leader);
+    expect(terrain?.slot?.leader).toEqual(match.player1.leader);
   });
 
   test('fail on NotYourTurn', () => {
@@ -230,10 +226,10 @@ describe('playCard', () => {
 
     expect(terrain).toBeDefined();
 
-    expect(terrain?.slot).toMatchObject({
-      name: 'card',
+    expect(terrain?.slot?.card).toMatchObject({
       owner: 'player1',
       instance: card,
+      position,
     });
 
     expect(match.player1.hand.find(({ id }) => cardId === id)).toBeUndefined();
@@ -348,8 +344,7 @@ describe('playCard', () => {
     const terrain = match.getTerrain(position);
 
     terrain.slot = {
-      instance: match.player1.leader,
-      name: 'card',
+      leader: match.player1.leader,
     };
 
     expect(() =>
@@ -577,11 +572,13 @@ describe('moveCard', () => {
 
     const terrainTo = match.getTerrain(to);
 
-    expect(terrainTo.slot?.instance).toEqual(card);
+    expect(terrainTo.slot?.card).toEqual({
+      instance: card,
+      owner: 'player1',
+      position: to,
+    });
 
     expect(match.player1.turnActions.playCard.times).toEqual(1);
-
-    expect(card?.position).toMatchObject(to);
   });
 
   test('fail on CardNotFound', () => {
@@ -668,7 +665,7 @@ describe('moveCard', () => {
     );
   });
 
-  test('fail on HasObstacle', () => {
+  test('fail on FriendlyFireError', () => {
     const p1 = new Player('Timmy');
     const match = new Match(p1);
 
@@ -687,7 +684,7 @@ describe('moveCard', () => {
     const to = { x: 3, y: 0 };
 
     expect(() => match.moveCard('player1', cardId, to)).toThrowError(
-      'HasObstacle'
+      'FriendlyFireError'
     );
   });
 
@@ -718,5 +715,77 @@ describe('moveCard', () => {
     match.moveCard('player1', cardId, { x: 3, y: 1 });
 
     expect(match.player2.lifePoints).toEqual(11);
+  });
+
+  test('card attack loose', () => {
+    const to = { x: 3, y: 1 };
+
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    const enemyCard = match.player2.hand[0];
+
+    if (enemyCard !== undefined) {
+      enemyCard.attackPoints = 5;
+
+      match.placeCard('player2', enemyCard, to);
+    }
+
+    const attackerCard = match.player1.hand[0];
+
+    if (attackerCard) {
+      attackerCard.attackPoints = 3;
+
+      const cardId: string = attackerCard?.id || '';
+
+      match.playCard('player1', cardId, { x: 2, y: 1 });
+
+      match.moveCard('player1', cardId, to);
+    }
+
+    const terrainTo = match.getTerrain(to);
+
+    expect(terrainTo.slot?.card).toMatchObject({
+      instance: enemyCard,
+      owner: 'player2',
+      position: to,
+    });
+
+    expect(match.player1.lifePoints).toEqual(18);
+  });
+
+  test('card attack leader', () => {
+    const to = { x: 3, y: 1 };
+
+    const p1 = new Player('Timmy');
+    const match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    match.placeLeader('player2', to);
+
+    const attackerCard = match.player1.hand[0];
+
+    if (attackerCard) {
+      attackerCard.attackPoints = 4;
+
+      const cardId: string = attackerCard?.id || '';
+
+      match.playCard('player1', cardId, { x: 2, y: 1 });
+
+      match.moveCard('player1', cardId, to);
+    }
+
+    const terrainTo = match.getTerrain(to);
+
+    expect(terrainTo.slot?.leader).toEqual(match.player2.leader);
+
+    expect(match.player2.lifePoints).toEqual(16);
   });
 });

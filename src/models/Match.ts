@@ -1,5 +1,6 @@
 import { v4 } from 'uuid';
 import { Player } from './Player';
+import positionHelper from '../helper/position';
 
 const INIT_LIFE_POINTS = 20;
 
@@ -15,11 +16,11 @@ const MOVE_LEADER_LIMIT_REACHED_ERROR = 'MoveLeaderLimitReached';
 const PLAY_CARD_LIMIT_REACHED_ERROR = 'PlayCardLimitReached';
 const CARD_NOT_FOUND_ERROR = 'CardNotFound';
 const MOVE_CARD_LIMIT_REACHED_ERROR = 'MoveCardLimitReached';
-// const FRIENDLY_FIRE_ERROR = 'FriendlyFireError';
+const FRIENDLY_FIRE_ERROR = 'FriendlyFireError';
 
 export class Match implements IMatch {
   id: string;
-  map: ITerrain[];
+  map: Map<string, ITerrain>;
   turnOwner: string;
   player1: IMatchPlayer;
   player2: IMatchPlayer;
@@ -30,15 +31,13 @@ export class Match implements IMatch {
   }
 
   constructor(player1: Player) {
-    const map = [];
+    const map = new Map();
     for (let i = 0; i < 7; i += 1) {
       for (let j = 0; j < 7; j += 1) {
         const terrain: ITerrain = {
-          x: i,
-          y: j,
           type: 'default',
         };
-        map.push(terrain);
+        map.set(positionHelper.toString({ x: i, y: j }), terrain);
       }
     }
     this.map = map;
@@ -62,6 +61,7 @@ export class Match implements IMatch {
       cards: player1.cards,
       hand: player1.cards.slice(0, 5),
       leader: {
+        owner: 'player1',
         id: v4(),
       },
       lifePoints: INIT_LIFE_POINTS,
@@ -91,6 +91,7 @@ export class Match implements IMatch {
         },
       },
       leader: {
+        owner: 'player2',
         id: v4(),
       },
       lifePoints: INIT_LIFE_POINTS,
@@ -125,9 +126,8 @@ export class Match implements IMatch {
   }
 
   findTerrain(position: IPosition): ITerrain | undefined {
-    const terrain = this.map.find(
-      (el) => el.x === position.x && el.y === position.y
-    );
+    const posStr = positionHelper.toString(position);
+    const terrain = this.map.get(posStr);
     return terrain;
   }
 
@@ -139,70 +139,35 @@ export class Match implements IMatch {
     return terrain;
   }
 
-  placeInPosition(
-    owner: IPlayerRef,
-    position: IPosition,
-    instance: ICard | ILeader,
-    instanceName: 'card' | 'leader'
-  ) {
+  placeLeader(player: IPlayerRef, position: IPosition) {
+    const leader = this[player].leader;
+
+    const terrain = this.getTerrain(position);
+    this.throwIfObstacle(terrain);
+
+    if (leader.position != undefined) {
+      const oldTerrain = this.findTerrain(leader.position);
+      delete oldTerrain?.slot;
+    }
+
+    terrain.slot = {
+      leader,
+    };
+
+    leader.position = position;
+  }
+
+  placeCard(player: IPlayerRef, card: ICard, position: IPosition) {
     const terrain = this.getTerrain(position);
     this.throwIfObstacle(terrain);
 
     terrain.slot = {
-      instance,
-      name: instanceName,
-      owner: owner,
+      card: {
+        instance: card,
+        owner: player,
+        position,
+      },
     };
-
-    const oldPos = instance.position;
-
-    if (oldPos != undefined) {
-      const oldTerrain = this.findTerrain(oldPos);
-      delete oldTerrain?.slot;
-    }
-    instance.position = position;
-  }
-
-  placeLeader(player: IPlayerRef, position: IPosition) {
-    this.placeInPosition(player, position, this[player].leader, 'leader');
-  }
-
-  placeCard(
-    player: IPlayerRef,
-    card: ITerrainSlotInstance,
-    position: IPosition
-  ) {
-    this.placeInPosition(player, position, card, 'card');
-  }
-
-  cardAttack(c1: ICard, c2: ICard): IPlayerRef | undefined {
-    const position =
-      c1.attackPoints > c2.attackPoints ? c2.position : c1.position;
-    if (position) {
-      const t = this.getTerrain(position);
-      const owner = t.slot?.owner;
-      if (owner) {
-        this[owner].lifePoints -= c1.attackPoints - c2.attackPoints;
-      }
-      delete t.slot;
-      return owner;
-    }
-    return undefined;
-  }
-
-  handleContact(
-    _player: IPlayerRef,
-    card: ICard,
-    targetSlot: ITerrainSlot
-  ): IPlayerRef | undefined {
-    // if (targetSlot.owner === player) {
-    //   throw new Error(FRIENDLY_FIRE_ERROR);
-    // }
-    if (targetSlot.name === 'card') {
-      // @ts-ignore
-      return this.cardAttack(card, targetSlot.instance);
-    }
-    return undefined;
   }
 
   moveCard(player: IPlayerRef, cardId: string, position: IPosition) {
@@ -212,31 +177,67 @@ export class Match implements IMatch {
       throw new Error(MOVE_CARD_LIMIT_REACHED_ERROR);
     }
 
-    const terrain = this.map.find((t) => {
+    const terrain = [...this.map.values()].find((t) => {
       return (
-        t.slot?.instance.id === cardId &&
-        t.slot.owner === player &&
-        t.slot.name === 'card'
+        t.slot?.card?.instance.id === cardId && t.slot.card.owner === player
       );
     });
 
-    const instance = terrain?.slot?.instance;
-    if (instance === undefined || instance.position === undefined) {
+    const card = terrain?.slot?.card;
+    if (card === undefined) {
       throw new Error(CARD_NOT_FOUND_ERROR);
     }
-    this.throwIfNotInRange(instance.position, position);
+    this.throwIfNotInRange(card.position, position);
 
     const targetTerrain = this.findTerrain(position);
-    const targetSlot = targetTerrain?.slot;
-    if (targetTerrain !== undefined && targetSlot !== undefined) {
-      // @ts-ignore
-      const looser = this.handleContact(player, instance, targetSlot);
-      if (looser === player) return;
-    }
 
-    const card = instance;
-    this.placeCard(player, card, position);
-    moveCards.cards.set(cardId, moveCardTimes + 1);
+    if (targetTerrain === undefined || targetTerrain.slot === undefined) {
+      this.placeCard(player, card.instance, position);
+
+      delete terrain?.slot;
+
+      moveCards.cards.set(cardId, moveCardTimes + 1);
+    } else if (targetTerrain.slot.leader !== undefined) {
+      const enemy = targetTerrain.slot.leader.owner;
+
+      if (enemy === player) {
+        throw new Error(FRIENDLY_FIRE_ERROR);
+      }
+
+      this[enemy].lifePoints -= card.instance.attackPoints;
+
+      moveCards.cards.set(card.instance.id, moveCardTimes + 1);
+    } else if (targetTerrain.slot.card !== undefined) {
+      const { owner: enemy } = targetTerrain.slot.card;
+
+      if (enemy === player) {
+        throw new Error(FRIENDLY_FIRE_ERROR);
+      }
+
+      const diffAtk =
+        card.instance.attackPoints -
+        targetTerrain.slot.card.instance.attackPoints;
+
+      if (diffAtk > 0) {
+        this[enemy].lifePoints -= diffAtk;
+
+        delete targetTerrain?.slot;
+
+        this.placeCard(player, card.instance, position);
+
+        delete terrain?.slot;
+
+        moveCards.cards.set(card.instance.id, moveCardTimes + 1);
+      } else if (diffAtk < 0) {
+        this[player].lifePoints += diffAtk;
+
+        delete terrain?.slot;
+
+        moveCards.cards.delete(card.instance.id);
+      } else {
+        moveCards.cards.set(card.instance.id, moveCardTimes + 1);
+      }
+    }
   }
 
   throwIfNotInRange(
@@ -328,9 +329,11 @@ export class Match implements IMatch {
     });
 
     terrain.slot = {
-      name: 'card',
-      instance: card,
-      owner: player,
+      card: {
+        instance: card,
+        owner: player,
+        position,
+      },
     };
 
     this[player].hand.splice(cardIndex, 1);

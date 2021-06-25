@@ -1,6 +1,13 @@
 interface ILeader {
   id: string;
+  owner: IPlayerRef;
   position?: IPosition;
+}
+
+interface IPlayedCard {
+  position: IPosition;
+  instance: ICard;
+  owner: IPlayerRef;
 }
 
 interface IMatchPlayer {
@@ -29,5 +36,5 @@ interface IMatch {
   turnOwner: string;
   player1: IMatchPlayer;
   player2?: IMatchPlayer;
-  map: ITerrain[];
+  map: Map<string, ITerrain>;
 }
