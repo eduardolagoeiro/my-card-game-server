@@ -36,5 +36,5 @@ interface IMatch {
   turnOwner: string;
   player1: IMatchPlayer;
   player2?: IMatchPlayer;
-  map: Map<string, ITerrain>;
+  map: Record<string, ITerrain>;
 }

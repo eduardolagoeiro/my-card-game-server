@@ -20,7 +20,7 @@ const FRIENDLY_FIRE_ERROR = 'FriendlyFireError';
 
 export class Match implements IMatch {
   id: string;
-  map: Map<string, ITerrain>;
+  map: Record<string, ITerrain>;
   turnOwner: string;
   player1: IMatchPlayer;
   player2: IMatchPlayer;
@@ -31,13 +31,13 @@ export class Match implements IMatch {
   }
 
   constructor(player1: Player) {
-    const map = new Map();
+    const map: Record<string, ITerrain> = {};
     for (let i = 0; i < 7; i += 1) {
       for (let j = 0; j < 7; j += 1) {
         const terrain: ITerrain = {
           type: 'default',
         };
-        map.set(positionHelper.toString({ x: i, y: j }), terrain);
+        map[positionHelper.toString({ x: i, y: j })] = terrain;
       }
     }
     this.map = map;
@@ -127,7 +127,7 @@ export class Match implements IMatch {
 
   findTerrain(position: IPosition): ITerrain | undefined {
     const posStr = positionHelper.toString(position);
-    const terrain = this.map.get(posStr);
+    const terrain = this.map[posStr];
     return terrain;
   }
 
@@ -177,7 +177,7 @@ export class Match implements IMatch {
       throw new Error(MOVE_CARD_LIMIT_REACHED_ERROR);
     }
 
-    const terrain = [...this.map.values()].find((t) => {
+    const terrain = Object.values(this.map).find((t) => {
       return (
         t.slot?.card?.instance.id === cardId && t.slot.card.owner === player
       );
