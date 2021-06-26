@@ -2,8 +2,10 @@ import helper from '../../test/test.helper';
 
 const sockets = helper.init();
 
-describe('getMap', () => {
+describe('getState', () => {
   test('success', (done) => {
+    helper.setDone(sockets, done);
+
     let player1Id: '';
     let player2Id: '';
     let matchId: '';
@@ -16,12 +18,13 @@ describe('getMap', () => {
         matchId = data.id;
         sockets.clientSocket2?.emit('enterMatch', { auth: player2Id, matchId });
       } else if (eventName === 'matchReady') {
-        sockets.clientSocket1?.emit('getMap', {
+        sockets.clientSocket1?.emit('getState', {
           auth: player1Id,
           matchId,
         });
-      } else if (eventName === 'map') {
+      } else if (eventName === 'state') {
         expect(data.map).toBeDefined();
+        expect(data.hand).toBeDefined();
         done();
       }
     });

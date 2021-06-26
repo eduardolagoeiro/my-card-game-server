@@ -8,11 +8,20 @@ const playCard: ISocketHandler = ({ auth, matchId, cardId, position }) => {
 
   match.playCard(thisPlayer, cardId, position);
 
-  return util.reflectAction(match, enemy, 'cardPlayed', {
-    ref: thisPlayer,
-    position,
-    cardId,
+  const sharedResult = { ref: thisPlayer, position, cardId };
+
+  match[enemy].player.socket.emit('cardPlayed', {
+    state: util.getState(match, enemy),
+    ...sharedResult,
   });
+
+  return [
+    'cardPlayed',
+    {
+      state: util.getState(match, thisPlayer),
+      ...sharedResult,
+    },
+  ];
 };
 
 export default playCard;

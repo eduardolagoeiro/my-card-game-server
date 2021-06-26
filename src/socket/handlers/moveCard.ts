@@ -4,15 +4,24 @@ import util from './util';
 const moveCard: ISocketHandler = ({ auth, matchId, cardId, position }) => {
   const player = util.getPlayer(auth);
   const match = util.getMatch(matchId);
-  const [thisPlayer, anotherPlayer] = util.getPlayerRef(match, player);
+  const [thisPlayer, enemy] = util.getPlayerRef(match, player);
 
   match.moveCard(thisPlayer, cardId, position);
 
-  return util.reflectAction(match, anotherPlayer, 'cardMoved', {
-    ref: thisPlayer,
-    position,
-    cardId,
+  const sharedResult = { ref: thisPlayer, position, cardId };
+
+  match[enemy].player.socket.emit('cardMoved', {
+    state: util.getState(match, enemy),
+    ...sharedResult,
   });
+
+  return [
+    'cardMoved',
+    {
+      state: util.getState(match, thisPlayer),
+      ...sharedResult,
+    },
+  ];
 };
 
 export default moveCard;
