@@ -62,4 +62,17 @@ export default {
 
     return data;
   },
+  setDone(
+    data: {
+      clientSocket1: Client.Socket | null;
+      clientSocket2: Client.Socket | null;
+    } = {
+      clientSocket1: null,
+      clientSocket2: null,
+    },
+    done: any
+  ) {
+    data.clientSocket1?.on('error', done);
+    data.clientSocket2?.on('error', done);
+  },
 };

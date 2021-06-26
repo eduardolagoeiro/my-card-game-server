@@ -2,7 +2,9 @@ import newPlayer from './newPlayer';
 import newMatch from './newMatch';
 import enterMatch from './enterMatch';
 import moveLeader from './moveLeader';
-import getMap from './getMap';
+import getState from './getState';
+import playCard from './playCard';
+import moveCard from './moveCard';
 import { ISocketHandler } from '../../types';
 
 const handlers: Record<string, ISocketHandler> = {
@@ -10,7 +12,9 @@ const handlers: Record<string, ISocketHandler> = {
   newMatch,
   enterMatch,
   moveLeader,
-  getMap,
+  getState,
+  playCard,
+  moveCard,
 };
 
 export default handlers;

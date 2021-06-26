@@ -83,6 +83,7 @@ export interface ITerrain {
 export interface ISocketHandlerInput {
   auth: string;
   matchId: string;
+  cardId: string;
   socket: any;
   name: string;
   position: {

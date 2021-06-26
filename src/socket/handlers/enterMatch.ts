@@ -8,7 +8,11 @@ const enterMatch: ISocketHandler = ({ matchId, auth }) => {
 
   match.setPlayer2(player);
 
-  return util.reflectAction(match, 'player1', 'matchReady', { map: match.map });
+  const [thisPlayer, enemy] = util.getPlayerRef(match, player);
+
+  match[enemy].player.socket.emit('matchReady', util.getState(match, enemy));
+
+  return ['matchReady', util.getState(match, thisPlayer)];
 };
 
 export default enterMatch;

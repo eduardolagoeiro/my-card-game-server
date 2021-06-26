@@ -27,12 +27,19 @@ function getPlayerRef(match: Match, player: Player): [IPlayerRef, IPlayerRef] {
 
 function reflectAction(
   match: Match,
-  ref: IPlayerRef,
+  enemy: IPlayerRef,
   event: string,
   data: any
 ): [string, any] {
-  match[ref].player.socket.emit(event, data);
+  match[enemy].player.socket.emit(event, data);
   return [event, data];
+}
+
+function getState(match: Match, player: IPlayerRef) {
+  return {
+    map: match.map,
+    hand: match[player].hand,
+  };
 }
 
 export default {
@@ -40,4 +47,5 @@ export default {
   getPlayer,
   getMatch,
   getPlayerRef,
+  getState,
 };

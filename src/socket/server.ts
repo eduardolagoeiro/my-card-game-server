@@ -17,6 +17,7 @@ io.on('connection', (socket) => {
         const [ackEvent, result] = fn({ ...data, socket });
         socket.emit(ackEvent, result);
       } catch (err) {
+        log('error', err.message);
         socket.emit('error', err.message);
       }
     }
