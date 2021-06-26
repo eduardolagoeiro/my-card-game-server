@@ -1,3 +1,4 @@
+import { ISocketHandler } from '../../types';
 import util from './util';
 
 const enterMatch: ISocketHandler = ({ matchId, auth }) => {

@@ -5,6 +5,7 @@ import {
 } from './errors';
 import { Player } from '../../models/Player';
 import { Match } from '../../models/Match';
+import { IPlayerRef } from '../../types';
 
 function getPlayer(auth: string): Player {
   const player = Player.get(auth);

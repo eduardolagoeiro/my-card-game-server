@@ -1,6 +1,14 @@
 import { v4 } from 'uuid';
 import { Player } from './Player';
 import positionHelper from '../helper/position';
+import {
+  ICard,
+  IMatch,
+  IMatchPlayer,
+  IPlayerRef,
+  IPosition,
+  ITerrain,
+} from '../types';
 
 const INIT_LIFE_POINTS = 20;
 

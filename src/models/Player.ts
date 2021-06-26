@@ -1,10 +1,7 @@
 import { v4 } from 'uuid';
+import { ICard, IPlayer, IPlayerSocket } from '../types';
 
-interface IPlayerSocket {
-  emit: (event: string, data?: any) => void;
-}
-
-export class Player {
+export class Player implements IPlayer {
   id: string;
   cards: ICard[];
   name: string;

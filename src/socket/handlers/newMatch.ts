@@ -1,4 +1,5 @@
 import { Match } from '../../models/Match';
+import { ISocketHandler } from '../../types';
 import util from './util';
 
 const newMatch: ISocketHandler = ({ auth }) => {

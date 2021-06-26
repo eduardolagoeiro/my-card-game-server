@@ -1,3 +1,4 @@
+import { ISocketHandler } from '../../types';
 import util from './util';
 
 const moveLeader: ISocketHandler = ({ auth, matchId, position }) => {
