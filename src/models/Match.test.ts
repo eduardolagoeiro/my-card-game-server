@@ -18,10 +18,14 @@ describe('setPlayer2', () => {
 
     const p2 = new Player('Ebony');
 
+    expect(match.status).toEqual('waiting');
+
     match.setPlayer2(p2);
 
     expect(match).toBeDefined();
     expect(match.player2?.player).toEqual(p2);
+
+    expect(match.status).toEqual('ongoing');
   });
 
   test('fail on Player2AlreadySet', () => {
@@ -40,8 +44,8 @@ describe('setPlayer2', () => {
   });
 });
 
-describe('isReady', () => {
-  test('is true', () => {
+describe('checkMatchEnded', () => {
+  test('not ended', () => {
     const p1 = new Player('Timmy');
     let match = new Match(p1);
 
@@ -49,14 +53,59 @@ describe('isReady', () => {
 
     match.setPlayer2(p2);
 
-    expect(match.isReady()).toEqual(true);
+    match.checkMatchEnded();
+
+    expect(match.status).toEqual('ongoing');
+    expect(match.winner).toBeUndefined();
   });
 
-  test('is false', () => {
+  test('ended draw', () => {
     const p1 = new Player('Timmy');
-    const match = new Match(p1);
+    let match = new Match(p1);
 
-    expect(match.isReady()).toEqual(false);
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    match.player1.lifePoints = -3;
+    match.player2.lifePoints = 0;
+
+    match.checkMatchEnded();
+
+    expect(match.status).toEqual('ended');
+    expect(match.winner).toBeUndefined();
+  });
+
+  test('ended p1', () => {
+    const p1 = new Player('Timmy');
+    let match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    match.player2.lifePoints = 0;
+
+    match.checkMatchEnded();
+
+    expect(match.status).toEqual('ended');
+    expect(match.winner).toEqual('player1');
+  });
+
+  test('ended p2', () => {
+    const p1 = new Player('Timmy');
+    let match = new Match(p1);
+
+    const p2 = new Player('Ebony');
+
+    match.setPlayer2(p2);
+
+    match.player1.lifePoints = -4;
+
+    match.checkMatchEnded();
+
+    expect(match.status).toEqual('ended');
+    expect(match.winner).toEqual('player2');
   });
 });
 
@@ -165,6 +214,9 @@ describe('endTurn', () => {
 
     match.setPlayer2(p2);
 
+    const handSize = match.player1.hand.length;
+    const deckSize = match.player1.deck.length;
+
     match.moveLeader('player1', { x: 3, y: 1 });
 
     const cardId = match.player1.hand[0]?.id || '';
@@ -181,6 +233,8 @@ describe('endTurn', () => {
 
     expect(match.turnOwner).toEqual('player1');
 
+    expect(match.player1.hand.length).toEqual(handSize);
+    expect(match.player1.deck.length).toEqual(deckSize - 1);
     expect(match.player1.turnActions.moveCards.cards.size).toEqual(0);
     expect(match.player1.turnActions.playCard.times).toEqual(0);
     expect(match.player1.turnActions.moveLeader.times).toEqual(0);
@@ -233,6 +287,7 @@ describe('playCard', () => {
     });
 
     expect(match.player1.hand.find(({ id }) => cardId === id)).toBeUndefined();
+    expect(match.player1.hand.length).toEqual(4);
   });
 
   test('fail on MatchNotReady', () => {

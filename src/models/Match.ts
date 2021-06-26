@@ -25,6 +25,7 @@ const PLAY_CARD_LIMIT_REACHED_ERROR = 'PlayCardLimitReached';
 const CARD_NOT_FOUND_ERROR = 'CardNotFound';
 const MOVE_CARD_LIMIT_REACHED_ERROR = 'MoveCardLimitReached';
 const FRIENDLY_FIRE_ERROR = 'FriendlyFireError';
+const MATCH_ENDED_ERROR = 'MatchEndedError';
 
 export class Match implements IMatch {
   id: string;
@@ -32,6 +33,8 @@ export class Match implements IMatch {
   turnOwner: string;
   player1: IMatchPlayer;
   player2: IMatchPlayer;
+  winner: IPlayerRef | undefined;
+  status: 'waiting' | 'ongoing' | 'ended';
   static storage: Map<string, Match> = new Map();
 
   static get(id: string): Match | undefined {
@@ -48,6 +51,7 @@ export class Match implements IMatch {
         map[positionHelper.toString({ x: i, y: j })] = terrain;
       }
     }
+    this.status = 'waiting';
     this.map = map;
     this.turnOwner = 'player1';
     this.player1 = {
@@ -66,7 +70,7 @@ export class Match implements IMatch {
         },
       },
       player: player1,
-      cards: player1.cards,
+      deck: player1.cards,
       hand: player1.cards.slice(0, 5),
       leader: {
         owner: 'player1',
@@ -103,21 +107,41 @@ export class Match implements IMatch {
         id: v4(),
       },
       lifePoints: INIT_LIFE_POINTS,
-      cards: player2.cards,
+      deck: player2.cards,
       player: player2,
       hand: player2.cards.slice(0, 5),
     };
     this.placeLeader('player1', { x: 3, y: 0 });
     this.placeLeader('player2', { x: 3, y: 6 });
-  }
-
-  isReady(): boolean {
-    return !!this.player2;
+    this.status = 'ongoing';
   }
 
   throwIfNotReady() {
-    if (!this.isReady()) {
+    if (this.status !== 'ongoing') {
       throw new Error(MATCH_NOT_READY_ERROR);
+    }
+  }
+
+  throwIfMatchEnded() {
+    if (this.status === 'ended') {
+      throw new Error(MATCH_ENDED_ERROR);
+    }
+  }
+
+  checkMatchEnded() {
+    const p1win = this.player2.lifePoints <= 0;
+    const p2win = this.player1.lifePoints <= 0;
+
+    if (p1win || p2win) {
+      this.status = 'ended';
+    }
+
+    if (p1win !== p2win) {
+      if (p1win) {
+        this.winner = 'player1';
+      } else if (p2win) {
+        this.winner = 'player2';
+      }
     }
   }
 
@@ -246,6 +270,7 @@ export class Match implements IMatch {
         moveCards.cards.set(card.instance.id, moveCardTimes + 1);
       }
     }
+    this.checkMatchEnded();
   }
 
   throwIfNotInRange(
@@ -287,6 +312,7 @@ export class Match implements IMatch {
   }
 
   moveLeader(player: IPlayerRef, position: IPosition) {
+    this.throwIfMatchEnded();
     this.throwIfNotReady();
     this.throwIfNotYourTurn(player);
     const { moveLeader } = this[player].turnActions;
@@ -301,6 +327,7 @@ export class Match implements IMatch {
   }
 
   endTurn(player: IPlayerRef) {
+    this.throwIfMatchEnded();
     this.throwIfNotReady();
     this.throwIfNotYourTurn(player);
     const anotherRef = player === 'player1' ? 'player2' : 'player1';
@@ -309,9 +336,12 @@ export class Match implements IMatch {
     anotherPlayer.turnActions.playCard.times = 0;
     anotherPlayer.turnActions.moveLeader.times = 0;
     anotherPlayer.turnActions.moveCards.cards = new Map();
+    const cardPoped = anotherPlayer.deck.pop();
+    if (cardPoped !== undefined) anotherPlayer.hand.push(cardPoped);
   }
 
   playCard(player: IPlayerRef, cardId: string, position: IPosition) {
+    this.throwIfMatchEnded();
     this.throwIfNotReady();
 
     const { playCard } = this[player].turnActions;

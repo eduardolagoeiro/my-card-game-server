@@ -57,7 +57,7 @@ export interface IMatchPlayer {
   leader: ILeader;
   player: IPlayer;
   lifePoints: number;
-  cards: ICard[];
+  deck: ICard[];
   hand: ICard[];
 }
 
@@ -66,6 +66,8 @@ export interface IMatch {
   player1: IMatchPlayer;
   player2?: IMatchPlayer;
   map: Record<string, ITerrain>;
+  winner: IPlayerRef | undefined;
+  status: 'waiting' | 'ongoing' | 'ended';
 }
 
 export interface ITerrainSlot {

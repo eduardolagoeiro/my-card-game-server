@@ -92,7 +92,8 @@ test('success', (done) => {
 
   match.moveCard('player1', player1CardIds[0] || '', { x: 1, y: 6 }); // attack vs leader
 
-  // match.result()
+  expect(match.status).toEqual('ended');
+  expect(match.winner).toEqual('player1');
 
   done();
 });
