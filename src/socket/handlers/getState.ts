@@ -1,8 +1,10 @@
 import { ISocketHandler } from '../../types';
 import util from './util';
 
-const getState: ISocketHandler = ({ auth, matchId }) => {
+const getState: ISocketHandler = ({ auth, matchId, socket }) => {
   const player = util.getPlayer(auth);
+
+  player.setSocket(socket);
 
   const match = util.getMatch(matchId);
 

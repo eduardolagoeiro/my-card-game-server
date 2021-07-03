@@ -41,6 +41,7 @@ function getState(match: Match, player: IPlayerRef) {
     hand: match[player].hand,
     status: match.status,
     winner: match.winner,
+    turnOwner: match.turnOwner,
   };
 }
 
