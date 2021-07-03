@@ -5,6 +5,7 @@ import moveLeader from './moveLeader';
 import getState from './getState';
 import playCard from './playCard';
 import moveCard from './moveCard';
+import endTurn from './endTurn';
 import { ISocketHandler } from '../../types';
 
 const handlers: Record<string, ISocketHandler> = {
@@ -15,6 +16,7 @@ const handlers: Record<string, ISocketHandler> = {
   getState,
   playCard,
   moveCard,
+  endTurn,
 };
 
 export default handlers;
