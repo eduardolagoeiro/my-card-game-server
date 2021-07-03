@@ -1,6 +1,9 @@
-import io from './singleton';
-import handlers from './handlers';
+import { Server } from 'socket.io';
 import debug from 'debug';
+
+import handlers from './handlers';
+
+const io = new Server();
 
 const log = debug('socket:server');
 

@@ -1,7 +1,7 @@
 import app from './app';
 import db from './db';
 import http from 'http';
-import socketServer from './socket/server';
+import socketServer from './socket';
 import debug from 'debug';
 
 const log = debug('infra:server');
