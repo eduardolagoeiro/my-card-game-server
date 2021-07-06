@@ -37,6 +37,7 @@ function reflectAction(
 
 function getState(match: Match, player: IPlayerRef) {
   return {
+    ref: player,
     map: match.map,
     hand: match[player].hand,
     status: match.status,
